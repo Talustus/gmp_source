@@ -1,6 +1,6 @@
 /* Test that routines allow reusing a source variable as destination.
 
-Copyright 1996, 1999-2002, 2009, 2012 Free Software Foundation, Inc.
+Copyright 1996, 1999, 2000, 2001, 2002, 2009, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library test suite.
 
@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
+the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@ the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
 
 #define COUNT 100
 
-void dump3 (const char *, mpz_t, mpz_t, mpz_t);
+void dump (const char *, mpz_t, mpz_t, mpz_t);
 void mpz_check_format (const mpz_t);
 
 typedef void (*dss_func) (mpz_t, const mpz_t, const mpz_t);
@@ -133,19 +133,19 @@ const char *ds_func_names[] =
 #define FAIL(class,indx,op1,op2,op3) \
   do {									\
   class##_funcs[indx] = 0;						\
-  dump3 (class##_func_names[indx], op1, op2, op3);			\
+  dump (class##_func_names[indx], op1, op2, op3);			\
   failures++;								\
   } while (0)
 #define FAIL2(fname,op1,op2,op3) \
   do {									\
-  dump3 (#fname, op1, op2, op3);						\
+  dump (#fname, op1, op2, op3);						\
   failures++;								\
   } while (0)
 
 void
 testmain (int argc, char **argv)
 {
-  unsigned i;
+  int i;
   int pass, reps = COUNT;
   mpz_t in1, in2, in3;
   unsigned long int in2i;
@@ -192,9 +192,9 @@ testmain (int argc, char **argv)
       bsi = mpz_get_ui (bs);
       if ((bsi & 1) != 0)
 	mpz_neg (in1, in1);
-      if ((bsi & 2) != 0)
+      if ((bsi & 1) != 0)
 	mpz_neg (in2, in2);
-      if ((bsi & 4) != 0)
+      if ((bsi & 1) != 0)
 	mpz_neg (in3, in3);
 
       for (i = 0; i < sizeof (dss_funcs) / sizeof (dss_func); i++)
@@ -625,7 +625,7 @@ testmain (int argc, char **argv)
 }
 
 void
-dump3 (const char *name, mpz_t in1, mpz_t in2, mpz_t in3)
+dump (const char *name, mpz_t in1, mpz_t in2, mpz_t in3)
 {
   printf ("failure in %s (", name);
   mpz_out_str (stdout, -16, in1);

@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
+the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,7 +212,9 @@ void
 smallexaustive (unsigned int count)
 {
   mpz_t          n_z, want;
-  unsigned long  n, k;
+  unsigned long  n, k, i, r;
+  int            tests;
+  gmp_randstate_ptr rands;
 
   mpz_init (n_z);
   mpz_init (want);

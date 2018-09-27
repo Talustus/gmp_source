@@ -1,32 +1,22 @@
 /* Shared speed subroutines.
 
-Copyright 1999-2006, 2008-2015 Free Software Foundation, Inc.
+Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010,
+2011, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of either:
-
-  * the GNU Lesser General Public License as published by the Free
-    Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
-
-or
-
-  * the GNU General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any
-    later version.
-
-or both in parallel, as here.
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
 
-You should have received copies of the GNU General Public License and the
-GNU Lesser General Public License along with the GNU MP Library.  If not,
-see https://www.gnu.org/licenses/.  */
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
 #define __GMP_NO_ATTRIBUTE_CONST_PURE
 
@@ -175,9 +165,6 @@ speed_measure (double (*fun) (struct speed_params *s), struct speed_params *s)
 		  fprintf (stderr, "Fatal error: too many (%d) failed measurements (0.0)\n", zeros);
 		  abort ();
 		}
-	     if (s->reps < 10000)
-	       s->reps *= 2;
-
 	      continue;
 	    }
 
@@ -360,7 +347,7 @@ speed_cache_fill (struct speed_params *s)
 }
 
 
-/* Miscellaneous options accepted by tune and speed programs under -o. */
+/* Miscellanous options accepted by tune and speed programs under -o. */
 
 void
 speed_option_set (const char *s)
@@ -474,14 +461,9 @@ speed_mpn_com (struct speed_params *s)
   SPEED_ROUTINE_MPN_COPY (mpn_com);
 }
 double
-speed_mpn_neg (struct speed_params *s)
+speed_mpn_tabselect (struct speed_params *s)
 {
-  SPEED_ROUTINE_MPN_COPY (mpn_neg);
-}
-double
-speed_mpn_sec_tabselect (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_TABSELECT (mpn_sec_tabselect);
+  SPEED_ROUTINE_MPN_TABSELECT (mpn_tabselect);
 }
 
 
@@ -701,28 +683,6 @@ double
 speed_mpn_divrem_2_inv (struct speed_params *s)
 {
   SPEED_ROUTINE_MPN_DIVREM_2 (mpn_divrem_2_inv);
-}
-
-double
-speed_mpn_div_qr_1n_pi1 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_DIV_QR_1N_PI1 (mpn_div_qr_1n_pi1);
-}
-double
-speed_mpn_div_qr_1n_pi1_1 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_DIV_QR_1N_PI1 (mpn_div_qr_1n_pi1_1);
-}
-double
-speed_mpn_div_qr_1n_pi1_2 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_DIV_QR_1N_PI1 (mpn_div_qr_1n_pi1_2);
-}
-
-double
-speed_mpn_div_qr_1 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_DIV_QR_1 (mpn_div_qr_1);
 }
 
 double
@@ -947,12 +907,6 @@ speed_mpn_ni_invertappr (struct speed_params *s)
 }
 
 double
-speed_mpn_sec_invert (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_SEC_INVERT (mpn_sec_invert, mpn_sec_invert_itch);
-}
-
-double
 speed_mpn_redc_1 (struct speed_params *s)
 {
   SPEED_ROUTINE_REDC_1 (mpn_redc_1);
@@ -990,26 +944,6 @@ double
 speed_mpn_sub_n (struct speed_params *s)
 {
 SPEED_ROUTINE_MPN_BINARY_N (mpn_sub_n);
-}
-double
-speed_mpn_add_1 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_UNARY_1 (mpn_add_1);
-}
-double
-speed_mpn_add_1_inplace (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_UNARY_1_INPLACE (mpn_add_1);
-}
-double
-speed_mpn_sub_1 (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_UNARY_1 (mpn_sub_1);
-}
-double
-speed_mpn_sub_1_inplace (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_UNARY_1_INPLACE (mpn_sub_1);
 }
 
 double
@@ -1052,14 +986,14 @@ speed_mpn_add_n_sub_n (struct speed_params *s)
 }
 #endif
 
-#if HAVE_NATIVE_mpn_addlsh1_n == 1
+#if HAVE_NATIVE_mpn_addlsh1_n
 double
 speed_mpn_addlsh1_n (struct speed_params *s)
 {
   SPEED_ROUTINE_MPN_BINARY_N (mpn_addlsh1_n);
 }
 #endif
-#if HAVE_NATIVE_mpn_sublsh1_n == 1
+#if HAVE_NATIVE_mpn_sublsh1_n
 double
 speed_mpn_sublsh1_n (struct speed_params *s)
 {
@@ -1087,21 +1021,21 @@ speed_mpn_sublsh1_n_ip1 (struct speed_params *s)
   SPEED_ROUTINE_MPN_COPY (mpn_sublsh1_n_ip1);
 }
 #endif
-#if HAVE_NATIVE_mpn_rsblsh1_n == 1
+#if HAVE_NATIVE_mpn_rsblsh1_n
 double
 speed_mpn_rsblsh1_n (struct speed_params *s)
 {
   SPEED_ROUTINE_MPN_BINARY_N (mpn_rsblsh1_n);
 }
 #endif
-#if HAVE_NATIVE_mpn_addlsh2_n == 1
+#if HAVE_NATIVE_mpn_addlsh2_n
 double
 speed_mpn_addlsh2_n (struct speed_params *s)
 {
   SPEED_ROUTINE_MPN_BINARY_N (mpn_addlsh2_n);
 }
 #endif
-#if HAVE_NATIVE_mpn_sublsh2_n == 1
+#if HAVE_NATIVE_mpn_sublsh2_n
 double
 speed_mpn_sublsh2_n (struct speed_params *s)
 {
@@ -1129,7 +1063,7 @@ speed_mpn_sublsh2_n_ip1 (struct speed_params *s)
   SPEED_ROUTINE_MPN_COPY (mpn_sublsh2_n_ip1);
 }
 #endif
-#if HAVE_NATIVE_mpn_rsblsh2_n == 1
+#if HAVE_NATIVE_mpn_rsblsh2_n
 double
 speed_mpn_rsblsh2_n (struct speed_params *s)
 {
@@ -1194,14 +1128,14 @@ speed_mpn_rsh1sub_n (struct speed_params *s)
 #endif
 
 double
-speed_mpn_cnd_add_n (struct speed_params *s)
+speed_mpn_addcnd_n (struct speed_params *s)
 {
-  SPEED_ROUTINE_MPN_BINARY_N_CALL (mpn_cnd_add_n (1, wp, xp, yp, s->size));
+  SPEED_ROUTINE_MPN_BINARY_N_CALL (mpn_addcnd_n (wp, xp, yp, s->size, 1));
 }
 double
-speed_mpn_cnd_sub_n (struct speed_params *s)
+speed_mpn_subcnd_n (struct speed_params *s)
 {
-  SPEED_ROUTINE_MPN_BINARY_N_CALL (mpn_cnd_sub_n (1, wp, xp, yp, s->size));
+  SPEED_ROUTINE_MPN_BINARY_N_CALL (mpn_subcnd_n (wp, xp, yp, s->size, 1));
 }
 
 /* mpn_and_n etc can be macros and so have to be handled with
@@ -1505,16 +1439,6 @@ speed_mpn_fft_sqr (struct speed_params *s)
 }
 
 double
-speed_mpn_sqrlo (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_SQRLO (mpn_sqrlo);
-}
-double
-speed_mpn_sqrlo_basecase (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_SQRLO (mpn_sqrlo_basecase);
-}
-double
 speed_mpn_mullo_n (struct speed_params *s)
 {
   SPEED_ROUTINE_MPN_MULLO_N (mpn_mullo_n);
@@ -1751,25 +1675,13 @@ speed_mpn_jacobi_base_4 (struct speed_params *s)
 double
 speed_mpn_sqrtrem (struct speed_params *s)
 {
-  SPEED_ROUTINE_MPN_SQRTROOT_CALL (mpn_sqrtrem (wp, wp2, s->xp, s->size));
-}
-
-double
-speed_mpn_sqrt (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_SQRTROOT_CALL (mpn_sqrtrem (wp, NULL, s->xp, s->size));
+  SPEED_ROUTINE_MPN_SQRTREM (mpn_sqrtrem);
 }
 
 double
 speed_mpn_rootrem (struct speed_params *s)
 {
-  SPEED_ROUTINE_MPN_SQRTROOT_CALL (mpn_rootrem (wp, wp2, s->xp, s->size, s->r));
-}
-
-double
-speed_mpn_root (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPN_SQRTROOT_CALL (mpn_rootrem (wp, NULL, s->xp, s->size, s->r));
+  SPEED_ROUTINE_MPN_ROOTREM (mpn_rootrem);
 }
 
 
@@ -1777,12 +1689,6 @@ double
 speed_mpz_fac_ui (struct speed_params *s)
 {
   SPEED_ROUTINE_MPZ_FAC_UI (mpz_fac_ui);
-}
-
-double
-speed_mpz_2fac_ui (struct speed_params *s)
-{
-  SPEED_ROUTINE_MPZ_UI (mpz_2fac_ui);
 }
 
 
@@ -1929,7 +1835,7 @@ speed_noop_wxys (struct speed_params *s)
 double
 speed_malloc_free (struct speed_params *s)
 {
-  size_t  bytes = s->size * GMP_LIMB_BYTES;
+  size_t  bytes = s->size * BYTES_PER_MP_LIMB;
   SPEED_ROUTINE_ALLOC_FREE (void *p,
 			    p = malloc (bytes);
 			    free (p));
@@ -1938,9 +1844,9 @@ speed_malloc_free (struct speed_params *s)
 double
 speed_malloc_realloc_free (struct speed_params *s)
 {
-  size_t  bytes = s->size * GMP_LIMB_BYTES;
+  size_t  bytes = s->size * BYTES_PER_MP_LIMB;
   SPEED_ROUTINE_ALLOC_FREE (void *p,
-			    p = malloc (GMP_LIMB_BYTES);
+			    p = malloc (BYTES_PER_MP_LIMB);
 			    p = realloc (p, bytes);
 			    free (p));
 }
@@ -1948,7 +1854,7 @@ speed_malloc_realloc_free (struct speed_params *s)
 double
 speed_gmp_allocate_free (struct speed_params *s)
 {
-  size_t  bytes = s->size * GMP_LIMB_BYTES;
+  size_t  bytes = s->size * BYTES_PER_MP_LIMB;
   SPEED_ROUTINE_ALLOC_FREE (void *p,
 			    p = (*__gmp_allocate_func) (bytes);
 			    (*__gmp_free_func) (p, bytes));
@@ -1957,11 +1863,11 @@ speed_gmp_allocate_free (struct speed_params *s)
 double
 speed_gmp_allocate_reallocate_free (struct speed_params *s)
 {
-  size_t  bytes = s->size * GMP_LIMB_BYTES;
+  size_t  bytes = s->size * BYTES_PER_MP_LIMB;
   SPEED_ROUTINE_ALLOC_FREE
     (void *p,
-     p = (*__gmp_allocate_func) (GMP_LIMB_BYTES);
-     p = (*__gmp_reallocate_func) (p, bytes, GMP_LIMB_BYTES);
+     p = (*__gmp_allocate_func) (BYTES_PER_MP_LIMB);
+     p = (*__gmp_reallocate_func) (p, bytes, BYTES_PER_MP_LIMB);
      (*__gmp_free_func) (p, bytes));
 }
 

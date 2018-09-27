@@ -1,32 +1,21 @@
 dnl  AMD K6 mpn_gcd_1 -- mpn by 1 gcd.
 
-dnl  Copyright 2000-2002, 2004, 2014 Free Software Foundation, Inc.
-
+dnl  Copyright 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+dnl
 dnl  This file is part of the GNU MP Library.
 dnl
-dnl  The GNU MP Library is free software; you can redistribute it and/or modify
-dnl  it under the terms of either:
+dnl  The GNU MP Library is free software; you can redistribute it and/or
+dnl  modify it under the terms of the GNU Lesser General Public License as
+dnl  published by the Free Software Foundation; either version 3 of the
+dnl  License, or (at your option) any later version.
 dnl
-dnl    * the GNU Lesser General Public License as published by the Free
-dnl      Software Foundation; either version 3 of the License, or (at your
-dnl      option) any later version.
+dnl  The GNU MP Library is distributed in the hope that it will be useful,
+dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl  Lesser General Public License for more details.
 dnl
-dnl  or
-dnl
-dnl    * the GNU General Public License as published by the Free Software
-dnl      Foundation; either version 2 of the License, or (at your option) any
-dnl      later version.
-dnl
-dnl  or both in parallel, as here.
-dnl
-dnl  The GNU MP Library is distributed in the hope that it will be useful, but
-dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-dnl  for more details.
-dnl
-dnl  You should have received copies of the GNU General Public License and the
-dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
-dnl  see https://www.gnu.org/licenses/.
+dnl  You should have received a copy of the GNU Lesser General Public License
+dnl  along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 include(`../config.m4')
 
@@ -321,12 +310,15 @@ L(modexact):
 
 	pushl	%ebx		FRAME_pushl()
 
-ifdef(`PIC_WITH_EBX',`
+ifdef(`PIC',`
 	nop	C code alignment
 	call	L(movl_eip_ebx)
-	add	$_GLOBAL_OFFSET_TABLE_, %ebx
+L(here):
+	addl	$_GLOBAL_OFFSET_TABLE_, %ebx
+	call	GSYM_PREFIX`'mpn_modexact_1_odd@PLT
+',`
+	call	GSYM_PREFIX`'mpn_modexact_1_odd
 ')
-	CALL(	mpn_modexact_1_odd)
 
 	movl	%esi, %edx		C y odd
 	movl	SAVE_ESI, %esi
@@ -350,7 +342,7 @@ ifdef(`PIC_WITH_EBX',`
 	ret
 
 
-ifdef(`PIC_WITH_EBX',`
+ifdef(`PIC',`
 L(movl_eip_ebx):
 	movl	(%esp), %ebx
 	ret_internal

@@ -1,6 +1,7 @@
 /* Support for diagnostic traces.
 
-Copyright 1999-2005 Free Software Foundation, Inc.
+Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
+Inc.
 
 This file is part of the GNU MP Library test suite.
 
@@ -15,7 +16,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
+the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 
 /* Future: Would like commas printed between limbs in hex or binary, but

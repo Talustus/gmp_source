@@ -1,32 +1,21 @@
 /* mpz_congruent_2exp_p -- test congruence of mpz mod 2^n.
 
-Copyright 2001, 2002, 2013 Free Software Foundation, Inc.
+Copyright 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of either:
-
-  * the GNU Lesser General Public License as published by the Free
-    Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
-
-or
-
-  * the GNU General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any
-    later version.
-
-or both in parallel, as here.
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
 
-You should have received copies of the GNU General Public License and the
-GNU Lesser General Public License along with the GNU MP Library.  If not,
-see https://www.gnu.org/licenses/.  */
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
@@ -39,19 +28,10 @@ mpz_congruent_2exp_p (mpz_srcptr a, mpz_srcptr c, mp_bitcnt_t d) __GMP_NOTHROW
   unsigned       dbits;
   mp_ptr         ap, cp;
   mp_limb_t      dmask, alimb, climb, sum;
-  mp_size_t      as, cs, asize, csize;
+  mp_size_t      asize_signed, csize_signed, asize, csize;
 
-  as = SIZ(a);
-  asize = ABS(as);
-
-  cs = SIZ(c);
-  csize = ABS(cs);
-
-  if (asize < csize)
-    {
-      MPZ_SRCPTR_SWAP (a, c);
-      MP_SIZE_T_SWAP (asize, csize);
-    }
+  if (ABSIZ(a) < ABSIZ(c))
+    MPZ_SRCPTR_SWAP (a, c);
 
   dlimbs = d / GMP_NUMB_BITS;
   dbits = d % GMP_NUMB_BITS;
@@ -60,10 +40,16 @@ mpz_congruent_2exp_p (mpz_srcptr a, mpz_srcptr c, mp_bitcnt_t d) __GMP_NOTHROW
   ap = PTR(a);
   cp = PTR(c);
 
-  if (csize == 0)
+  asize_signed = SIZ(a);
+  asize = ABS(asize_signed);
+
+  csize_signed = SIZ(c);
+  csize = ABS(csize_signed);
+
+  if (csize_signed == 0)
     goto a_zeros;
 
-  if ((cs ^ as) >= 0)
+  if ((asize_signed ^ csize_signed) >= 0)
     {
       /* same signs, direct comparison */
 
@@ -97,7 +83,7 @@ mpz_congruent_2exp_p (mpz_srcptr a, mpz_srcptr c, mp_bitcnt_t d) __GMP_NOTHROW
       /* common low zero limbs, stopping at first non-zeros, which must
 	 match twos complement */
       i = 0;
-      do
+      for (;;)
 	{
 	  ASSERT (i < csize);  /* always have a non-zero limb on c */
 	  alimb = ap[i];
@@ -106,25 +92,33 @@ mpz_congruent_2exp_p (mpz_srcptr a, mpz_srcptr c, mp_bitcnt_t d) __GMP_NOTHROW
 
 	  if (i >= dlimbs)
 	    return (sum & dmask) == 0;
-	  ++i;
+	  i++;
 
 	  /* require both zero, or first non-zeros as twos-complements */
 	  if (sum != 0)
 	    return 0;
-	} while (alimb == 0);
+
+	  if (alimb != 0)
+	    break;
+	}
 
       /* further limbs matching as ones-complement */
-      for (; i < csize; ++i)
+      for (;;)
 	{
+	  if (i >= csize)
+	    break;
+
 	  alimb = ap[i];
 	  climb = cp[i];
-	  sum = alimb ^ climb ^ GMP_NUMB_MASK;
+	  sum = (alimb + climb + 1) & GMP_NUMB_MASK;
 
 	  if (i >= dlimbs)
 	    return (sum & dmask) == 0;
 
 	  if (sum != 0)
 	    return 0;
+
+	  i++;
 	}
 
       /* no more c, so require all 1 bits in a */

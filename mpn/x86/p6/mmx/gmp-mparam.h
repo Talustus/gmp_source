@@ -1,37 +1,26 @@
 /* Intel P6/mmx gmp-mparam.h -- Compiler/machine parameter header file.
 
-Copyright 1991, 1993, 1994, 1999-2005, 2009, 2010 Free Software Foundation,
-Inc.
+Copyright 1991, 1993, 1994, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009,
+2010 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of either:
-
-  * the GNU Lesser General Public License as published by the Free
-    Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
-
-or
-
-  * the GNU General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any
-    later version.
-
-or both in parallel, as here.
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
 
-You should have received copies of the GNU General Public License and the
-GNU Lesser General Public License along with the GNU MP Library.  If not,
-see https://www.gnu.org/licenses/.  */
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
 
 #define GMP_LIMB_BITS 32
-#define GMP_LIMB_BYTES 4
+#define BYTES_PER_MP_LIMB 4
 
 
 /* NOTE: In a fat binary build SQR_TOOM2_THRESHOLD here cannot be more than the
@@ -64,7 +53,7 @@ see https://www.gnu.org/licenses/.  */
 #define MUL_TOOM42_TO_TOOM63_THRESHOLD      80
 
 #define SQR_BASECASE_THRESHOLD               0  /* always (native) */
-#define SQR_TOOM2_THRESHOLD                 30
+#define SQR_TOOM2_THRESHOLD                 48
 #define SQR_TOOM3_THRESHOLD                 81
 #define SQR_TOOM4_THRESHOLD                142
 #define SQR_TOOM6_THRESHOLD                258

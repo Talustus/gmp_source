@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
+the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 #include <limits.h>
 #include <math.h>
@@ -28,6 +28,14 @@ the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
 #define GMP_LIMB_BITS (sizeof(mp_limb_t) * CHAR_BIT)
 
 #define COUNT 10000
+
+static void
+dump (const char *label, const mpz_t x)
+{
+  char *buf = mpz_get_str (NULL, 16, x);
+  fprintf (stderr, "%s: %s\n", label, buf);
+  free (buf);
+}
 
 static const struct
 {
@@ -53,6 +61,9 @@ testmain (int argc, char **argv)
   unsigned i;
   mpz_t x;
 
+  void (*freefunc) (void *, size_t);
+  mp_get_memory_functions (NULL, NULL, &freefunc);
+
   for (i = 0; values[i].s; i++)
     {
       char *s;
@@ -67,7 +78,7 @@ testmain (int argc, char **argv)
 		   values[i].d, s, values[i].s);
 	  abort ();
 	}
-      testfree (s);
+      freefunc(s, 0);
       mpz_clear (x);
     }
 
@@ -75,9 +86,7 @@ testmain (int argc, char **argv)
 
   for (i = 0; i < COUNT; i++)
     {
-      /* Use volatile, to avoid extended precision in floating point
-	 registers, e.g., on m68k and 80387. */
-      volatile double d, f;
+      double d, f;
       unsigned long m;
       int e;
 

@@ -2,33 +2,23 @@ divert(-1)
 
 dnl  m4 macros for amd64 assembler.
 
-dnl  Copyright 1999-2005, 2008, 2009, 2011-2013 Free Software Foundation, Inc.
-
+dnl  Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009, 2011, 2012
+dnl  Free Software Foundation, Inc.
+dnl
 dnl  This file is part of the GNU MP Library.
 dnl
-dnl  The GNU MP Library is free software; you can redistribute it and/or modify
-dnl  it under the terms of either:
+dnl  The GNU MP Library is free software; you can redistribute it and/or
+dnl  modify it under the terms of the GNU Lesser General Public License as
+dnl  published by the Free Software Foundation; either version 3 of the
+dnl  License, or (at your option) any later version.
 dnl
-dnl    * the GNU Lesser General Public License as published by the Free
-dnl      Software Foundation; either version 3 of the License, or (at your
-dnl      option) any later version.
+dnl  The GNU MP Library is distributed in the hope that it will be useful,
+dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl  Lesser General Public License for more details.
 dnl
-dnl  or
-dnl
-dnl    * the GNU General Public License as published by the Free Software
-dnl      Foundation; either version 2 of the License, or (at your option) any
-dnl      later version.
-dnl
-dnl  or both in parallel, as here.
-dnl
-dnl  The GNU MP Library is distributed in the hope that it will be useful, but
-dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-dnl  for more details.
-dnl
-dnl  You should have received copies of the GNU General Public License and the
-dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
-dnl  see https://www.gnu.org/licenses/.
+dnl  You should have received a copy of the GNU Lesser General Public License
+dnl  along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 
 dnl  Usage: CPUVEC_FUNCS_LIST
@@ -43,8 +33,6 @@ define(CPUVEC_FUNCS_LIST,
 `addmul_1',
 `addmul_2',
 `bdiv_dbm1c',
-`cnd_add_n',
-`cnd_sub_n',
 `com',
 `copyd',
 `copyi',
@@ -127,7 +115,7 @@ m4_assert_defined(`WANT_ASSERT')
 `ifelse(`$2',,,
 `	pushfq')
 	$2
-	`j$1'	L(ASSERT_ok`'ASSERT_counter)
+	j`$1'	L(ASSERT_ok`'ASSERT_counter)
 	ud2	C assertion failed
 L(ASSERT_ok`'ASSERT_counter):
 ifelse(`$2',,,`	popfq')
@@ -192,12 +180,9 @@ define(`R8',
 dnl  Usage: CALL(funcname)
 dnl
 
-define(`CALL',`dnl
 ifdef(`PIC',
-	`call	GSYM_PREFIX`'$1@PLT'
-,
-	`call	GSYM_PREFIX`'$1'
-)')
+  `define(`CALL',`call	GSYM_PREFIX`'$1@PLT')',
+  `define(`CALL',`call	GSYM_PREFIX`'$1')')
 
 
 define(`JUMPTABSECT', `.section	.data.rel.ro.local,"aw",@progbits')
@@ -207,9 +192,9 @@ dnl  Usage: JMPENT(targlabel,tablabel)
 
 define(`JMPENT',`dnl
 ifdef(`PIC',
-	`.long	$1-$2'dnl
+	`.long	$1-$2'
 ,
-	`.quad	$1'dnl
+	`.quad	$1'
 )')
 
 
@@ -233,7 +218,7 @@ dnl  Used for private GMP symbols that should never be overridden by users.
 dnl  This can save reloc entries and improve shlib sharing as well as
 dnl  application startup times
 
-define(`PROTECT',  `.hidden $1')
+define(`PROTECT',  `.protected $1')
 
 
 dnl  Usage: x86_lookup(target, key,value, key,value, ...)
@@ -292,111 +277,5 @@ ifelse(eval(x86_opcode_regxmm($3) >= 8 || x86_opcode_regxmm($2) >= 8),1,
 eval(0xc0+x86_opcode_regxmm($3)%8*8+x86_opcode_regxmm($2)%8),dnl
 substr($1,1)')
 
-
-dnl  Usage
-dnl
-dnl    regnum(op)   raw operand index (so slightly misnamed)
-dnl    regnumh(op)  high bit of register operand nimber
-dnl    ix(op)       0 for reg operand, 1 for plain pointer operand.
-dnl
-
-define(`regnum',`x86_lookup(`$1',oplist)')
-define(`regnumh',`eval(regnum($1)/8 & 1)')
-define(`ix',`eval(regnum($1)/16)')
-define(`oplist',
-``%rax',   0, `%rcx',   1, `%rdx',   2,  `%rbx',   3,
- `%rsp',   4, `%rbp',   5, `%rsi',   6,  `%rdi',   7,
- `%r8',    8, `%r9',    9, `%r10',  10,  `%r11',  11,
- `%r12',  12, `%r13',  13, `%r14',  14,  `%r15',  15,
- `(%rax)',16, `(%rcx)',17, `(%rdx)',18,  `(%rbx)',19,
- `(%rsp)',20, `(%rbp)',21, `(%rsi)',22,  `(%rdi)',23,
- `(%r8)', 24, `(%r9)', 25, `(%r10)',26,  `(%r11)',27,
- `(%r12)',28, `(%r13)',29, `(%r14)',30,  `(%r15)',31')
-
-
-dnl  Usage
-dnl
-dnl     mulx(reg1,reg2,reg3)
-dnl
-dnl  or
-dnl
-dnl     mulx((reg1),reg2,reg3)
-dnl
-dnl  where reg1 is any register but rsp,rbp,r12,r13, or
-dnl
-dnl     mulx(off,(reg1),reg2,reg3)
-dnl
-dnl  where reg1 is any register but rsp,r12.
-dnl
-dnl  The exceptions are due to special coding needed for some registers; rsp
-dnl  and r12 need an extra byte 0x24 at the end while rbp and r13 lack the
-dnl  offset-less form.
-dnl
-dnl  Other addressing forms are not handled.  Invalid forms are not properly
-dnl  detected.  Offsets that don't fit one byte are not handled correctly.
-
-define(`mulx',`dnl
-.byte	0xc4`'dnl
-ifelse(`$#',3,`dnl
-,eval(0xe2^32*regnumh($1)^128*regnumh($3))`'dnl
-,eval(0xfb-8*regnum($2))`'dnl
-,0xf6`'dnl
-,eval(0xc0+(7 & regnum($1))+8*(7 & regnum($3))-0xc0*ix($1))`'dnl
-',`$#',4,`dnl
-,eval(0xe2^32*regnumh($2)^128*regnumh($4))`'dnl
-,eval(0xfb-8*regnum($3))`'dnl
-,0xf6`'dnl
-,eval(0x40+(7 & regnum($2))+8*(7 & regnum($4)))`'dnl
-,eval(($1 + 256) % 256)`'dnl
-')')
-
-dnl  Usage
-dnl
-dnl     adcx(reg1,reg2)
-dnl     adox(reg1,reg2)
-dnl
-dnl  or
-dnl
-dnl     adcx((reg1),reg2)
-dnl     adox((reg1),reg2)
-dnl
-dnl  where reg1 is any register but rsp,rbp,r12,r13, or
-dnl
-dnl     adcx(off,(reg1),reg2)
-dnl     adox(off,(reg1),reg2)
-dnl
-dnl  where reg1 is any register but rsp,r12.
-dnl
-dnl  The exceptions are due to special coding needed for some registers; rsp
-dnl  and r12 need an extra byte 0x24 at the end while rbp and r13 lack the
-dnl  offset-less form.
-dnl
-dnl  Other addressing forms are not handled.  Invalid forms are not properly
-dnl  detected.  Offsets that don't fit one byte are not handled correctly.
-
-define(`adx_helper',`dnl
-,eval(0x48+regnumh($1)+4*regnumh($2))`'dnl
-,0x0f`'dnl
-,0x38`'dnl
-,0xf6`'dnl
-')
-
-define(`adx',`dnl
-ifelse(`$#',2,`dnl
-adx_helper($1,$2)dnl
-,eval(0xc0+(7 & regnum($1))+8*(7 & regnum($2))-0xc0*ix($1))`'dnl
-',`$#',3,`dnl
-adx_helper($2,$3)dnl
-,eval(0x40+(7 & regnum($2))+8*(7 & regnum($3)))`'dnl
-,eval(($1 + 256) % 256)`'dnl
-')')
-
-define(`adcx',`dnl
-.byte	0x66`'dnl
-adx($@)')
-
-define(`adox',`dnl
-.byte	0xf3`'dnl
-adx($@)')
 
 divert`'dnl

@@ -4,33 +4,22 @@
    CERTAIN TO BE SUBJECT TO INCOMPATIBLE CHANGES OR DISAPPEAR COMPLETELY IN
    FUTURE GNU MP RELEASES.
 
-Copyright 2000-2003, 2005, 2013 Free Software Foundation, Inc.
+Copyright 2000, 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of either:
-
-  * the GNU Lesser General Public License as published by the Free
-    Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
-
-or
-
-  * the GNU General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any
-    later version.
-
-or both in parallel, as here.
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
 
-You should have received copies of the GNU General Public License and the
-GNU Lesser General Public License along with the GNU MP Library.  If not,
-see https://www.gnu.org/licenses/.  */
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
@@ -87,6 +76,14 @@ mpn_divexact_1 (mp_ptr dst, mp_srcptr src, mp_size_t size, mp_limb_t divisor)
   ASSERT_MPN (src, size);
   ASSERT_LIMB (divisor);
 
+  s = src[0];
+
+  if (size == 1)
+    {
+      dst[0] = s / divisor;
+      return;
+    }
+
   if ((divisor & 1) == 0)
     {
       count_trailing_zeros (shift, divisor);
@@ -101,38 +98,40 @@ mpn_divexact_1 (mp_ptr dst, mp_srcptr src, mp_size_t size, mp_limb_t divisor)
   if (shift != 0)
     {
       c = 0;
+      i = 0;
+      size--;
 
-      s = src[0];
-
-      for (i = 1; i < size; i++)
+      do
 	{
-	  s_next = src[i];
+	  s_next = src[i+1];
 	  ls = ((s >> shift) | (s_next << (GMP_NUMB_BITS-shift))) & GMP_NUMB_MASK;
 	  s = s_next;
 
 	  SUBC_LIMB (c, l, ls, c);
 
 	  l = (l * inverse) & GMP_NUMB_MASK;
-	  dst[i - 1] = l;
+	  dst[i] = l;
 
 	  umul_ppmm (h, dummy, l, divisor);
 	  c += h;
+
+	  i++;
 	}
+      while (i < size);
 
       ls = s >> shift;
       l = ls - c;
       l = (l * inverse) & GMP_NUMB_MASK;
-      dst[size - 1] = l;
+      dst[i] = l;
     }
   else
     {
-      s = src[0];
-
       l = (s * inverse) & GMP_NUMB_MASK;
       dst[0] = l;
+      i = 1;
       c = 0;
 
-      for (i = 1; i < size; i++)
+      do
 	{
 	  umul_ppmm (h, dummy, l, divisor);
 	  c += h;
@@ -142,6 +141,8 @@ mpn_divexact_1 (mp_ptr dst, mp_srcptr src, mp_size_t size, mp_limb_t divisor)
 
 	  l = (l * inverse) & GMP_NUMB_MASK;
 	  dst[i] = l;
+	  i++;
 	}
+      while (i < size);
     }
 }

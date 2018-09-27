@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
+the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 #include <limits.h>
 #include <stdlib.h>
@@ -26,10 +26,18 @@ the GNU MP Library test suite.  If not, see https://www.gnu.org/licenses/.  */
 #define MAXBITS 400
 #define COUNT 10000
 
+static void
+dump (const char *label, const mpz_t x)
+{
+  char *buf = mpz_get_str (NULL, 16, x);
+  fprintf (stderr, "%s: %s\n", label, buf);
+  free (buf);
+}
+
 void
 testlogops (int count)
 {
-  int i;
+  unsigned i;
   mpz_t a, b, res, ref;
   mp_bitcnt_t c;
 

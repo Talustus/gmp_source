@@ -3,33 +3,22 @@ dnl  x86 fat binary entrypoints.
 dnl  Contributed to the GNU project by Kevin Ryde (original x86_32 code) and
 dnl  Torbjorn Granlund (port to x86_64)
 
-dnl  Copyright 2003, 2009, 2011-2014, 2016 Free Software Foundation, Inc.
+dnl  Copyright 2003, 2009, 2011, 2012 Free Software Foundation, Inc.
 
 dnl  This file is part of the GNU MP Library.
-dnl
-dnl  The GNU MP Library is free software; you can redistribute it and/or modify
-dnl  it under the terms of either:
-dnl
-dnl    * the GNU Lesser General Public License as published by the Free
-dnl      Software Foundation; either version 3 of the License, or (at your
-dnl      option) any later version.
-dnl
-dnl  or
-dnl
-dnl    * the GNU General Public License as published by the Free Software
-dnl      Foundation; either version 2 of the License, or (at your option) any
-dnl      later version.
-dnl
-dnl  or both in parallel, as here.
-dnl
-dnl  The GNU MP Library is distributed in the hope that it will be useful, but
-dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-dnl  for more details.
-dnl
-dnl  You should have received copies of the GNU General Public License and the
-dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
-dnl  see https://www.gnu.org/licenses/.
+
+dnl  The GNU MP Library is free software; you can redistribute it and/or
+dnl  modify it under the terms of the GNU Lesser General Public License as
+dnl  published by the Free Software Foundation; either version 3 of the
+dnl  License, or (at your option) any later version.
+
+dnl  The GNU MP Library is distributed in the hope that it will be useful,
+dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl  Lesser General Public License for more details.
+
+dnl  You should have received a copy of the GNU Lesser General Public License
+dnl  along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.
 
 include(`../config.m4')
 
@@ -44,19 +33,15 @@ dnl  "instrument" profiling scheme anyway.
 define(`WANT_PROFILING',no)
 
 
-dnl  We define PRETEND_PIC as a helper symbol, the use it for suppressing
-dnl  normal, fast call code, since that triggers problems on Darwin, OpenBSD
-dnl  and some versions of GNU/Linux.  This will go away when symbol hiding is
-dnl  finished.
+dnl  We define PIC_OR_DARWIN as a helper symbol, the use it for suppressing
+dnl  normal, fast call code, since that triggers problems on darwin.
+dnl
+dnl  FIXME: There might be a more elegant solution, adding less overhead.
 
 ifdef(`DARWIN',
-`define(`PRETEND_PIC')')
-ifdef(`OPENBSD',
-`define(`PRETEND_PIC')')
-ifdef(`LINUX',
-`define(`PRETEND_PIC')')
+`define(`PIC_OR_DARWIN')')
 ifdef(`PIC',
-`define(`PRETEND_PIC')')
+`define(`PIC_OR_DARWIN')')
 
 ABI_SUPPORT(DOS64)
 ABI_SUPPORT(STD64)
@@ -96,7 +81,7 @@ EPILOGUE()
 ',
 `	ALIGN(ifdef(`PIC',16,8))
 `'PROLOGUE($1)
-ifdef(`PRETEND_PIC',
+ifdef(`PIC_OR_DARWIN',
 `	LEA(	GSYM_PREFIX`'__gmpn_cpuvec, %rax)
 	jmp	*$2(%rax)
 ',`dnl non-PIC
@@ -175,7 +160,7 @@ IFSTD(`	push	%rsi	')
 	pop	%rdx
 IFSTD(`	pop	%rsi	')
 IFSTD(`	pop	%rdi	')
-ifdef(`PRETEND_PIC',`
+ifdef(`PIC_OR_DARWIN',`
 	LEA(	GSYM_PREFIX`'__gmpn_cpuvec, %r10)
 	jmp	*(%r10,%rax,8)
 ',`dnl non-PIC
@@ -186,8 +171,7 @@ ifdef(`PRETEND_PIC',`
 C long __gmpn_cpuid (char dst[12], int id);
 C
 C This is called only 3 times, so just something simple and compact is fine.
-C
-C The rcx/ecx zeroing here is needed for the BMI2 check.
+
 
 define(`rp',  `%rdi')
 define(`idx', `%rsi')
@@ -196,7 +180,6 @@ PROLOGUE(__gmpn_cpuid)
 	FUNC_ENTRY(2)
 	mov	%rbx, %r8
 	mov	R32(idx), R32(%rax)
-	xor	%ecx, %ecx
 	cpuid
 	mov	%ebx, (rp)
 	mov	%edx, 4(rp)

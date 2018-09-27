@@ -2,33 +2,22 @@
 
    Contributed to the GNU project by Torbjorn Granlund.
 
-Copyright 2009, 2012, 2013 Free Software Foundation, Inc.
+Copyright 2009, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of either:
-
-  * the GNU Lesser General Public License as published by the Free
-    Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
-
-or
-
-  * the GNU General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any
-    later version.
-
-or both in parallel, as here.
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
 
-You should have received copies of the GNU General Public License and the
-GNU Lesser General Public License along with the GNU MP Library.  If not,
-see https://www.gnu.org/licenses/.  */
+You should have received a copy of the GNU Lesser General Public License
+along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 
 /*
   Generate tables for fast, division-free trial division for GMP.
@@ -64,7 +53,7 @@ main (int argc, char *argv[])
   mpz_t pre[7];
   int i;
   int start_p, end_p, interval_start, interval_end, omitted_p;
-  const char *endtok;
+  char *endtok;
   int stop;
   int np, start_idx;
 
@@ -109,9 +98,7 @@ main (int argc, char *argv[])
   omitted_p = 3;
   interval_end = 0;
 
-/*  printf ("static struct gmp_primes_dtab gmp_primes_dtab[] = {\n"); */
-
-  printf ("#ifdef WANT_dtab\n");
+  printf ("static struct gmp_primes_dtab gmp_primes_dtab[] = {\n");
 
   for (t = start_p; t <= end_p; t += 2)
     {
@@ -133,7 +120,7 @@ main (int argc, char *argv[])
 	      if (! isprime (p))
 		continue;
 
-	      printf ("  P(%d,", (int) p);
+	      printf ("	 P(%d,", (int) p);
 	      mpz_invert_ui_2exp (inv, p, limb_bits);
 	      printf ("CNST_LIMB(0x");  mpz_out_str (stdout, 16, inv);  printf ("),");
 
@@ -151,12 +138,10 @@ main (int argc, char *argv[])
 	}
       interval_end = t;
     }
-  printf ("#define SMALLEST_OMITTED_PRIME %d\n", (int) omitted_p);
-  printf ("#endif\n");
+  printf ("  P(0,0,0)\n};\n");
 
-  printf ("#ifdef WANT_ptab\n");
 
-/*  printf ("static struct gmp_primes_ptab gmp_primes_ptab[] = {\n"); */
+  printf ("static struct gmp_primes_ptab gmp_primes_ptab[] = {\n");
 
   endtok = "";
 
@@ -208,9 +193,9 @@ main (int argc, char *argv[])
       interval_end = t;
       np++;
     }
+  printf ("\n};\n");
 
-  printf ("\n");
-  printf ("#endif\n");
+  printf ("#define SMALLEST_OMITTED_PRIME %d\n", (int) omitted_p);
 
   return 0;
 }
